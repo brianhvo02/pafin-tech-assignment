@@ -8,8 +8,6 @@ type UserAttributes = {
     name: string;
     email: string;
     password: string;
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 
 export type UserInput = Optional<UserAttributes, 'id'>;
@@ -21,11 +19,11 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
     public email!: string;
     public password!: string;
 
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+    checkPassword = async (password: string) => compare(password, this.password);
 
-    async checkPassword(password: string) {
-        return compare(password, this.password);
+    toJSON() {
+        const { password, ...data } = this.dataValues;
+        return data;
     }
 }
 
