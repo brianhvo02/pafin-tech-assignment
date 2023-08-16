@@ -94,6 +94,7 @@ console.log(result);
 | password  | The user's password.      |
 
 #### Example
+Generate a JWT token by logging in with an email and password.
 
 ```javascript
 const result = await fetch(URL + '/login', {
@@ -117,6 +118,7 @@ console.log(result);
 ```
 
 ### GET /user
+Get the user information with a user's JWT token.
 
 | Header        | Value              |
 | ------------- | ------------------ |
@@ -145,6 +147,7 @@ console.log(user);
 ```
 
 ### PATCH /user
+Update the user information with a user's JWT token.
 
 | Header        | Value              |
 | ------------- | ------------------ |
@@ -183,6 +186,7 @@ console.log(updatedUser);
 ```
 
 ### DELETE /user
+Delete the user with a user's JWT token.
 
 | Header        | Value              |
 | ------------- | ------------------ |
