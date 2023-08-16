@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createUser, getUserByCredentials } from "../../db/services/user";
+import { createUser, getUserByCredentials, getUserById } from "../../db/services/user";
 import { ValidationErrorItem } from "sequelize";
 import { Unauthorized, UnprocessableContent } from "../errors";
 import passport from "passport";
@@ -15,7 +15,8 @@ passport.use(
         },
         async (token, done) => {
             try {
-                return done(null, token.user);
+                const user = await getUserById(token.id);
+                return done(null, user);
             } catch (err) {
                 done(err);
             }
@@ -28,7 +29,8 @@ const AuthRouter = Router();
 AuthRouter.post('/signup', async (req, res, next) => {
     try {
         const user = await createUser(req.body);
-        res.json(user.toJSON());
+        const token = sign({ id: user.id }, secretOrKey, { expiresIn: '1h' });
+        return res.json({ token });
     } catch (e) {
         const { errors } = e as { errors: ValidationErrorItem[] };
         const formattedErrors = errors.map(err => 
@@ -66,7 +68,7 @@ AuthRouter.post('/login', async (req, res, next) => {
 
     try {
         const user = await getUserByCredentials(req.body.email, req.body.password);
-        const token = sign(user.toJSON(), secretOrKey, { expiresIn: '1h' });
+        const token = sign({ id: user.id }, secretOrKey, { expiresIn: '1h' });
         return res.json({ token });
     } catch(e) {
         return next(new Unauthorized([ 'Invalid credentials' ]));

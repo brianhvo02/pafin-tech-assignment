@@ -1,7 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 import { PORT, isTesting } from './config';
-import UserRouter from './api/routes/user';
 import AuthRouter from './api/routes/auth';
+import UserRouter from './api/routes/user';
 import { ServerError } from './api/errors';
 
 const app: Application = express();
@@ -13,7 +13,7 @@ app.get('/', async (req: Request, res: Response) => {
 });
 
 app.use(AuthRouter);
-app.use('/', UserRouter);
+app.use('/user', UserRouter);
 
 app.use((err: ServerError | Error, req: Request, res: Response, next: NextFunction) => {
     if ('statusCode' in err) {

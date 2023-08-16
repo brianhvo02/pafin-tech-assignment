@@ -4,11 +4,7 @@ import dbConnection from '../../../src/db/config';
 import request from 'supertest';
 import app from '../../../src';
 
-const dbReset = async () => {
-    await User.sequelize?.query('SET CONSTRAINTS ALL DEFERRED');
-    await User.destroy({ cascade: true, truncate: true, force: true });
-    await User.sequelize?.query("SET CONSTRAINTS ALL IMMEDIATE");
-}
+const dbReset = async () => User.destroy({ where: { email: 'auth_routes@test.com' } });
 
 describe('Auth routes', () => {
     beforeAll(async () => dbReset());
@@ -20,107 +16,106 @@ describe('Auth routes', () => {
     describe('POST /signup', () => {
         it('should create and return a new user', async () => {
             const params = {
-                name: 'John Doe',
-                email: 'jdoe@test.com',
+                name: 'Auth Routes',
+                email: 'auth_routes@test.com',
                 password: 'Password123'
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(200);
-            expect(res.body.name).toEqual(params.name);
-            expect(res.body.email).toEqual(params.email);
+            expect(statusCode).toBe(200);
+            expect(body).toHaveProperty('token');
         });
 
         it('should NOT create a user if email is invalid', async () => {
             const params = {
-                name: 'John Doe',
-                email: 'jdoe@test',
+                name: 'Auth Routes',
+                email: 'auth_routes@test',
                 password: 'Password123'
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(422);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(422);
+            expect(body).toHaveProperty('errors');
         });
 
         it('should NOT create a user if password is less than 6', async () => {
             const params = {
-                name: 'Bad John Doe',
-                email: 'bad_jdoe@test.com',
+                name: 'Bad Auth Routes',
+                email: 'bad_auth_routes@test.com',
                 password: 'Pass'
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(422);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(422);
+            expect(body).toHaveProperty('errors');
         });
 
         it('should NOT create a user if password is greater than 255', async () => {
             const params = {
-                name: 'Bad John Doe',
-                email: 'bad_jdoe@test.com',
+                name: 'Bad Auth Routes',
+                email: 'bad_auth_routes@test.com',
                 password: [...Array(256).keys()].map(() => 'x').join('')
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(422);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(422);
+            expect(body).toHaveProperty('errors');
         });
 
         it('should NOT create a user if password contains non-alphanumeric characters', async () => {
             const params = {
-                name: 'Bad John Doe',
-                email: 'bad_jdoe@test.com',
+                name: 'Bad Auth Routes',
+                email: 'bad_auth_routes@test.com',
                 password: 'Password123!'
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(422);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(422);
+            expect(body).toHaveProperty('errors');
         });
 
         it('should NOT create a user if email is already taken', async () => {
             const params = {
-                name: 'Bad John Doe',
-                email: 'jdoe@test.com',
+                name: 'Bad Auth Routes',
+                email: 'auth_routes@test.com',
                 password: 'Password'
             };
 
-            const res = await request(app).post('/signup').send(params);
+            const { statusCode, body } = await request(app).post('/signup').send(params);
 
-            expect(res.statusCode).toBe(422);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(422);
+            expect(body).toHaveProperty('errors');
         });
     });
 
     describe('POST /login', () => {
         it('should login a user with credentials', async () => {
             const params = {
-                email: 'jdoe@test.com',
+                email: 'auth_routes@test.com',
                 password: 'Password123'
             };
 
-            const res = await request(app).post('/login').send(params);
+            const { statusCode, body } = await request(app).post('/login').send(params);
 
-            expect(res.statusCode).toBe(200);
-            expect(res.body).toHaveProperty('token');
+            expect(statusCode).toBe(200);
+            expect(body).toHaveProperty('token');
         });
 
         it('should NOT login a user with incorrect credentials', async () => {
             const params = {
-                email: 'jdoe@test.com',
+                email: 'auth_routes@test.com',
                 password: 'Password'
             };
 
-            const res = await request(app).post('/login').send(params);
+            const { statusCode, body } = await request(app).post('/login').send(params);
 
-            expect(res.statusCode).toBe(401);
-            expect(res.body).toHaveProperty('errors');
+            expect(statusCode).toBe(401);
+            expect(body).toHaveProperty('errors');
         });
     })
 });
