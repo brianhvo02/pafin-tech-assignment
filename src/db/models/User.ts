@@ -1,9 +1,11 @@
+/** @module db/models/User */
+
 import { UUID } from 'crypto';
 import { DataTypes, Model, Optional, Sequelize, UUIDV4 } from 'sequelize';
 import dbConnection from '../config';
 import { compare, hash } from 'bcrypt';
 
-type UserAttributes = {
+interface UserAttributes {
     id: UUID;
     name: string;
     email: string;
@@ -12,15 +14,31 @@ type UserAttributes = {
 
 export type UserInput = Optional<UserAttributes, 'id'>;
 
+/**
+ * The User model
+ * @extends Model
+ * @implements {UserAttributes}
+ */
 export default class User extends Model<UserAttributes, UserInput> implements UserAttributes {
     public id!: UUID;
     public name!: string;
     public email!: string;
     public password!: string;
 
-    checkPassword = async (password: string) => compare(password, this.password);
+    /**
+     * Checks the given password against the user instance password.
+     * @async
+     * @param {string} password
+     * @returns {Promise.<boolean>} true if the passwords match, false if not
+     */
+    checkPassword = async (password: string): Promise<boolean> => compare(password, this.password);
 
-    toJSON() {
+    /**
+     * Returns a JSON-serializable object containing user data from the instance.
+     * @override
+     * @returns { Omit.<UserAttributes, 'password'> }
+     */
+    toJSON(): Omit<UserAttributes, 'password'> {
         const { password, ...data } = this.dataValues;
         return data;
     }

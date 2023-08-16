@@ -1,3 +1,5 @@
+/** @module db/config */
+
 import 'dotenv/config';
 import { Sequelize } from 'sequelize';
 import { isDevelopment } from '../config';
