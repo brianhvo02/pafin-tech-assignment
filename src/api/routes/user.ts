@@ -13,7 +13,8 @@ UserRouter.patch('/', authenticate, async (req, res, next) => {
     try {
         const updatedUser = await updateUserById(user.id, req.body);
         return res.send(updatedUser.toJSON());
-    } catch (e) {
+    } catch (e: any) {
+        console.log(e.errors[0].value)
         return next(e);
     }
 });

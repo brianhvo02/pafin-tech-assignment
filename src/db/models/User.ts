@@ -11,7 +11,6 @@ type UserAttributes = {
 }
 
 export type UserInput = Optional<UserAttributes, 'id'>;
-// export type UserOutput = Required<UserAttributes>;
 
 export default class User extends Model<UserAttributes, UserInput> implements UserAttributes {
     public id!: UUID;
@@ -57,9 +56,16 @@ User.init({
     timestamps: false,
     sequelize: dbConnection,
     tableName: 'users',
-    underscored: true
-});
-
-User.beforeCreate(async (user, options) => {
-    user.password = await hash(user.password, 10);
+    underscored: true,
+    hooks: {
+        beforeCreate: (async user => {
+            user.password = await hash(user.password, 10);
+        }),
+        beforeUpdate: (async (user, options) => {
+            if (user.changed('password')) {
+                options.validate = false;
+                user.password = await hash(user.password, 10);
+            }
+        })
+    }
 });

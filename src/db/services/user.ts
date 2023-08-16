@@ -21,7 +21,6 @@ export const getUserByCredentials = async (email: string, password: string) => {
 
 export const updateUserById = async (id: UUID, payload: Partial<UserInput>) => {
     const user = await getUserById(id);
-
     return user.update(payload);
 }
 

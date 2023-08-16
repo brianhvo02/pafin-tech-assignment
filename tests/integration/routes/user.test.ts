@@ -52,6 +52,33 @@ describe('User routes', () => {
             expect(body.name).toEqual(params.name);
             expect(body.email).toEqual(user.email);
         });
+
+        it('should update the current user\'s password', async () => {
+            const params = {
+                password: 'password'
+            }
+
+            const { statusCode, body } = await request(app).patch('/user')
+                .set('Authorization', `Bearer ${userToken}`).send(params);
+
+            expect(statusCode).toBe(200);
+            expect(body.email).toEqual(user.email);
+
+            const res = await request(app).post('/login')
+                .send({
+                    email: user.email,
+                    password: params.password
+                });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toHaveProperty('token');
+        });
+
+        it('should NOT update the user without a token', async () => {
+            const { statusCode } = await request(app).patch('/user').send();
+
+            expect(statusCode).toBe(401);
+        });
     });
 
     describe('DELETE /user', () => {
